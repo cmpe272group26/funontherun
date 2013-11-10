@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="color_grey">#9C9C9C</color>
+    <color name="color_dark_blue">#0099CC</color>
+    <color name="color_orange_selector">#80FF8800</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="orange">#EE8511</color>
+    <color name="default_circle_indicator_fill_color">#FFFFFFFF</color>
+    <color name="default_circle_indicator_page_color">#00000000</color>
+    <color name="default_circle_indicator_stroke_color">#FFDDDDDD</color>
+    <color name="color_red">#FF0000</color>
+    <color name="grey_dark">#565355</color>
+    <color name="grey_light_1">#A0A0A0</color>
+    <color name="grey_light_2">#919191</color>
+    <color name="header_color">#71205f</color>
+    <color name="desc_color">#414141</color>
+    <color name="divider_color">#b9b9b9</color>
+    <color name="grey_dark_color">#333333</color>
+    <color name="font_color">#414141</color>
+    <color name="hint_color">#808080</color>
+    <color name="splash_start_color">#0e3e3b</color>
+    <color name="splash_end_color">#166f69</color>
+    <color name="splash_header_color">#EAFFFD</color>
+
+</resources>

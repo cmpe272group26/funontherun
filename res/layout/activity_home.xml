@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeActivity" >
+
+    <TextView
+        android:id="@+id/source_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginTop="60dip"
+        android:text="@string/src_location_message"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/from_route"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/source_text_view"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dip"
+        android:hint="@string/src" android:text="San Jose"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/destination_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/to_route"
+        android:layout_margin="10dip"
+        android:text="@string/dest_location_message"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/to_route"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/submit"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:hint="@string/dest" android:text="San Francisco"
+        android:singleLine="true" />
+
+    <Button
+        android:id="@+id/submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dip"
+        android:text="@string/submit" />
+
+</RelativeLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Fun on the Run</string>
+    <string name="action_settings">Settings</string>
+    <string name="range_settings">Range options</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="src">Source Route</string>
+    <string name="dest">Destination Route</string>
+    <string name="submit">Submit</string>
+    <string name="categories">Categories</string>
+    <string name="category">Category</string>
+    <string name="name">Name:</string>
+    <string name="rating">Rating:</string>
+    <string name="address">Address:</string>
+    <string name="status">Status:</string>
+    <string name="show_on_map">Show on Map</string>
+    <string name="driving_directions">Driving Directions</string>
+    <string name="detail">Detail</string>
+    <string name="src_location_message">Enter Source Location:</string>
+    <string name="dest_location_message">Enter Destination Location:</string>
+    <string name="src_location_error_message">Please Enter Source Location</string>
+    <string name="dest_location_error_message">Please Enter Destination Location</string>
+    <string name="location_error_message">Please Enter Source and Destination Locations</string>
+    <string name="invalid_loc_msg">could not understand this location</string>
+    <string name="location">Location</string>
+    <string name="range">Range</string>
+    <string name="select_range">Select Range (In Miles)</string>
+    <string name="select_location">Select Location</string>
+
+</resources>
