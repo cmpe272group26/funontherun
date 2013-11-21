@@ -19,6 +19,7 @@ public class SplashScreenActivity extends Activity {
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.splash_screen);
 		mHandler.sendEmptyMessageDelayed(START_HOME_ACTIVITY, DELAY);
+
 	}
 
 	/**
@@ -27,12 +28,10 @@ public class SplashScreenActivity extends Activity {
 	Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(android.os.Message msg) {
-
 			Intent intent = new Intent();
 			intent.setClass(SplashScreenActivity.this, HomeActivity.class);
 			startActivity(intent);
 			finish();
-
 		};
 	};
 

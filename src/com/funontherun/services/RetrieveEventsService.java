@@ -1,7 +1,8 @@
 package com.funontherun.services;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +27,7 @@ public class RetrieveEventsService implements Runnable {
 	 * Listener for RetrieveEventsService
 	 */
 	public interface RetrieveEventsServiceListener {
-		void onRetrieveEventsFinished(List<Category> resultList);
+		void onRetrieveEventsFinished(ArrayList<Category> resultList);
 
 		void onRetrieveEventsFailed(int error, String message);
 	}
@@ -41,7 +42,7 @@ public class RetrieveEventsService implements Runnable {
 	private Context context;
 	private Location location;
 	private long range;
-	private List<Category> resultList = new ArrayList<Category>();
+	private ArrayList<Category> resultList = new ArrayList<Category>();
 
 	public RetrieveEventsService(Context context, String searchQuery,
 			Location location, long range) {
@@ -55,19 +56,23 @@ public class RetrieveEventsService implements Runnable {
 	 * Sends a GET request to retrieve Events
 	 */
 	public void run() {
-		if (searchQuery.contains(" "))
-			searchQuery = searchQuery.replace(" ", "+");
-		RETRIEVE_EVENTS_URL = Services.EVENTS_API_URL + location.getLattitude()
-				+ "," + location.getLongitude() + Services.RADIUS + range
-				+ Services.TYPES + searchQuery + Services.SENSOR + Services.KEY;
-		HTTPRequest request = new HTTPRequest(RETRIEVE_EVENTS_URL, context);
-		Log.d("Events Service", "URL::" + RETRIEVE_EVENTS_URL);
 
 		Message message = new Message();
 		try {
+			// if (searchQuery.contains(" "))
+			// searchQuery = searchQuery.replace(" ", "+");
+			searchQuery = URLEncoder.encode(searchQuery, "utf-8");
+			RETRIEVE_EVENTS_URL = Services.EVENTS_API_URL
+					+ location.getLattitude() + "," + location.getLongitude()
+					+ Services.RADIUS + range + Services.TYPES + searchQuery
+					+ Services.SENSOR + Services.KEY;
+			HTTPRequest request = new HTTPRequest(RETRIEVE_EVENTS_URL, context);
+			Log.d("Events Service", "URL::" + RETRIEVE_EVENTS_URL);
 			statusCode = request.execute(HTTPRequest.RequestMethod.GET);
-			message.what = statusCode;
 			jsonResponse = request.getResponseString();
+			if (jsonResponse.contains("html"))
+				message.what = Constants.FunOnTheRunDialogCodes.NETWORK_ERROR;
+			message.what = statusCode;
 			Log.d(TAG, "run::" + jsonResponse);
 			eventHandler.sendMessage(message);
 		} catch (Exception e) {
@@ -85,6 +90,7 @@ public class RetrieveEventsService implements Runnable {
 			case Constants.FunOnTheRunDialogCodes.SUCCESS:
 				if (!TextUtils.isEmpty(jsonResponse)) {
 					resultList = parseRetrievedSrcLocation(jsonResponse);
+					Collections.sort(resultList);
 					listener.onRetrieveEventsFinished(resultList);
 				} else {
 					listener.onRetrieveEventsFailed(
@@ -134,7 +140,7 @@ public class RetrieveEventsService implements Runnable {
 		this.listener = listener;
 	}
 
-	private List<Category> parseRetrievedSrcLocation(String response) {
+	private ArrayList<Category> parseRetrievedSrcLocation(String response) {
 
 		try {
 

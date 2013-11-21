@@ -12,8 +12,8 @@
         android:layout_marginRight="10dip"
         android:ellipsize="end"
         android:gravity="center_vertical"
+        android:maxLines="2"
         android:padding="10dip"
-        android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold" />

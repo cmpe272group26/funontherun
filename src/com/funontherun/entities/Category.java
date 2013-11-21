@@ -1,18 +1,19 @@
 package com.funontherun.entities;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Category implements Entitiy, Parcelable {
+public class Category implements Entitiy, Parcelable, Comparable<Category> {
 	private double lattitude;
 	private double longitude;
 	private String name;
 	private boolean isOpen;
 	private double rating;
 	private String address;
-	private String[] types;
+	private String types;
 
 	public Category() {
 
@@ -66,11 +67,11 @@ public class Category implements Entitiy, Parcelable {
 		this.address = address;
 	}
 
-	public String[] getTypes() {
+	public String getTypes() {
 		return types;
 	}
 
-	public void setTypes(String[] types) {
+	public void setTypes(String types) {
 		this.types = types;
 	}
 
@@ -101,11 +102,14 @@ public class Category implements Entitiy, Parcelable {
 		}
 		this.setRating(jsonObject.has("rating") ? jsonObject
 				.getDouble("rating") : 0.0);
+		if (jsonObject.has("types")) {
+			JSONArray typesArray = jsonObject.getJSONArray("types");
+			if (typesArray.length() > 0) {
+				this.setTypes(typesArray.getString(0));
+			}
+		}
 		this.setAddress(jsonObject.has("vicinity") ? jsonObject
 				.getString("vicinity") : "");
-		//
-		// this.setAddress(jsonObject.has("vicinity") ? jsonObject
-		// .getString("vicinity") : "");
 
 	}
 
@@ -137,6 +141,7 @@ public class Category implements Entitiy, Parcelable {
 		out.writeString(name);
 		out.writeString(address);
 		out.writeValue(isOpen);
+		out.writeString(types);
 
 	}
 
@@ -152,6 +157,7 @@ public class Category implements Entitiy, Parcelable {
 		name = in.readString();
 		address = in.readString();
 		rating = in.readDouble();
+		types = in.readString();
 	}
 
 	public static final Parcelable.Creator<Category> CREATOR = new Parcelable.Creator<Category>() {
@@ -163,5 +169,15 @@ public class Category implements Entitiy, Parcelable {
 			return new Category[size];
 		}
 	};
+
+	@Override
+	public int compareTo(Category category) {
+
+		if (this.rating > category.rating) {
+			return -1;
+		} else {
+			return 1;
+		}
+	}
 
 }

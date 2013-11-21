@@ -3,13 +3,18 @@ package com.funontherun.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.holoeverywhere.app.AlertDialog;
+
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.text.TextUtils;
 
+import com.funontherun.ApplicationEx;
+import com.funontherun.entities.Category;
+import com.funontherun.entities.Concert;
 import com.funontherun.entities.Location;
 
 public class FunUtils {
@@ -72,12 +77,14 @@ public class FunUtils {
 	public static List<String> getList() {
 		List<String> categoryList = new ArrayList<String>();
 		categoryList.add("Restaurants");
-		categoryList.add("Museums");
+		categoryList.add("Cafes");
 		categoryList.add("Weather");
-		categoryList.add("Tweets");
+		categoryList.add("Concerts");
+		categoryList.add("Movie Locations");
 		categoryList.add("ATM's");
-		categoryList.add("Universities");
-		categoryList.add("Stadiums");
+		categoryList.add("Sightseeing");
+		categoryList.add("Lodging");
+		categoryList.add("Services");
 
 		return categoryList;
 
@@ -93,14 +100,16 @@ public class FunUtils {
 
 		if (key.equalsIgnoreCase("Restaurants"))
 			value = "restaurant";
-		else if (key.equalsIgnoreCase("Museums"))
-			value = "museumt";
-		else if (key.equalsIgnoreCase("Universities"))
-			value = "university";
+		else if (key.equalsIgnoreCase("Cafes"))
+			value = "cafe";
+		else if (key.equalsIgnoreCase("Sightseeing"))
+			value = "amusement_park|aquarium|art_gallery|museum|zoo";
 		else if (key.equalsIgnoreCase("ATM's"))
 			value = "atm";
-		else if (key.equalsIgnoreCase("Stadiums"))
-			value = "stadium";
+		else if (key.equalsIgnoreCase("Services"))
+			value = "gas_station|car_repair|car_wash|hospital";
+		else if (key.equalsIgnoreCase("Lodging"))
+			value = "lodging";
 
 		return value;
 	}
@@ -117,4 +126,39 @@ public class FunUtils {
 			return "Closed";
 	}
 
+	/**
+	 * get equidistant point for getting lat long along the route.
+	 */
+	public static void getEquidistantPoint() {
+
+		ApplicationEx.increment = ApplicationEx.routePointsList.size() / 5;
+	}
+
+	public static void resetValues() {
+		ApplicationEx.mainCategoryList = new ArrayList<ArrayList<Category>>();
+		ApplicationEx.mainConcertList = new ArrayList<ArrayList<Concert>>();
+		ApplicationEx.count = 0;
+		ApplicationEx.increment = 0;
+	}
+
+	/**
+	 * Will construct the AlertDialog.Builder object for convenience
+	 * 
+	 * @param context
+	 *            Application Context
+	 * @param message
+	 *            Message to be displayed.
+	 * @return AlertDialog.Builder object with the message set.
+	 */
+	public static AlertDialog.Builder getDialogForStatus(Activity activity,
+			String message, String title) {
+		AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
+		dialog.setCancelable(false);
+		if (!TextUtils.isEmpty(title)) {
+			dialog.setTitle(title);
+		}
+
+		dialog.setMessage(message);
+		return dialog;
+	}
 }

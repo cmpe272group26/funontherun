@@ -1,5 +1,7 @@
 package com.funontherun.services;
 
+import java.net.URLEncoder;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,19 +48,23 @@ public class RetrieveDestRouteLocationService implements Runnable {
 	 * Sends a GET request to retrieve Destination Location
 	 */
 	public void run() {
-		if (searchQuery.contains(" "))
-			searchQuery = searchQuery.replace(" ", "+");
-		RETRIEVE_ROUTE_LOCATION_URL = Services.API_URL + searchQuery
-				+ Services.SENSOR;
-		HTTPRequest request = new HTTPRequest(RETRIEVE_ROUTE_LOCATION_URL,
-				context);
-		Log.d("Route Location Service", "URL::" + RETRIEVE_ROUTE_LOCATION_URL);
+		// if (searchQuery.contains(" "))
+		// searchQuery = searchQuery.replace(" ", "+");
 
 		Message message = new Message();
 		try {
+			searchQuery = URLEncoder.encode(searchQuery, "utf-8");
+			RETRIEVE_ROUTE_LOCATION_URL = Services.API_URL + searchQuery
+					+ Services.SENSOR;
+			HTTPRequest request = new HTTPRequest(RETRIEVE_ROUTE_LOCATION_URL,
+					context);
+			Log.d("Route Location Service", "URL::"
+					+ RETRIEVE_ROUTE_LOCATION_URL);
 			statusCode = request.execute(HTTPRequest.RequestMethod.GET);
 			jsonResponse = request.getResponseString();
 			Log.d(TAG, "run::" + jsonResponse);
+			if (jsonResponse.contains("html"))
+				message.what = Constants.FunOnTheRunDialogCodes.NETWORK_ERROR;
 			message.what = statusCode;
 			destinationLocationHandler.sendMessage(message);
 		} catch (Exception e) {

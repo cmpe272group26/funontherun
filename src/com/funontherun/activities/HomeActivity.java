@@ -53,8 +53,8 @@ public class HomeActivity extends FunBaseActivity implements
 		 * whether to show Standard Home Icon or not
 		 */
 		actionBarSherlock.setDisplayHomeAsUpEnabled(false);
-		actionBarSherlock.setBackgroundDrawable(getResources().getDrawable(
-				R.drawable.nav_bar));
+		// actionBarSherlock.setBackgroundDrawable(getResources().getDrawable(
+		// R.drawable.nav_bar));
 
 		sourceEditText = (EditText) findViewById(R.id.from_route);
 		destEditText = (EditText) findViewById(R.id.to_route);
@@ -102,22 +102,28 @@ public class HomeActivity extends FunBaseActivity implements
 		ApplicationEx.operationsQueue.execute(srcService);
 	}
 
+	/**
+	 * 
+	 * @param src
+	 * @param dest
+	 * @return true if the user has entered valid source & destination locations
+	 */
 	public boolean validateUserLocation(String src, String dest) {
 		src = src.trim();
 		dest = dest.trim();
-		if (TextUtils.isEmpty(src)) {
+		if (TextUtils.isEmpty(src.trim()) && TextUtils.isEmpty(dest.trim())) {
 			Toast.makeText(HomeActivity.this,
 					getResources().getString(R.string.location_error_message),
 					Toast.LENGTH_SHORT).show();
 			return false;
-		} else if (TextUtils.isEmpty(src) || src.equalsIgnoreCase(" ")) {
+		} else if (TextUtils.isEmpty(src.trim())) {
 			Toast.makeText(
 					HomeActivity.this,
 					getResources().getString(
 							R.string.src_location_error_message),
 					Toast.LENGTH_SHORT).show();
 			return false;
-		} else if (TextUtils.isEmpty(dest)) {
+		} else if (TextUtils.isEmpty(dest.trim())) {
 			Toast.makeText(
 					HomeActivity.this,
 					getResources().getString(

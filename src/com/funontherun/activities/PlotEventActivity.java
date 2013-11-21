@@ -10,14 +10,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.app.ProgressDialog;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -39,6 +42,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.funontherun.ApplicationEx;
 import com.funontherun.R;
 import com.funontherun.services.DirectionsJSONParser;
+import com.funontherun.utils.FunUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
@@ -52,7 +56,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 public class PlotEventActivity extends FunBaseActivity implements
@@ -72,38 +75,50 @@ public class PlotEventActivity extends FunBaseActivity implements
 	protected void onCreate(Bundle inState) {
 		super.onCreate(inState);
 		setContentView(R.layout.activity_map_demo);
-		LocationManager locationManager;
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		Location location = locationManager
-				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		updateWithNewLocation(location);
-
-		getLocations();
-
+		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+				.getMap();
 		actionBarSherlock = getSupportActionBar();
 
 		actionBarSherlock.setTitle(getResources().getString(R.string.app_name));
 		actionBarSherlock.setHomeButtonEnabled(false);
-
-		SOURCE = new LatLng(ApplicationEx.currentLocation.getLattitude(),
-				ApplicationEx.currentLocation.getLongitude());
-		DESTINATION = new LatLng(ApplicationEx.category.getLattitude(),
-				ApplicationEx.category.getLongitude());
-
 		/**
 		 * whether to show Standard Home Icon or not
 		 */
 		actionBarSherlock.setDisplayHomeAsUpEnabled(true);
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			getActionBar().setDisplayHomeAsUpEnabled(true);
+		try {
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+				getActionBar().setDisplayHomeAsUpEnabled(true);
+			}
+			LocationManager locationManager;
+			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			Location location = locationManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+			updateWithNewLocation(location);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-				.getMap();
+	}
+
+
+	public void plotEventsOnMap() {
+		SOURCE = new LatLng(ApplicationEx.currentLocation.getLattitude(),
+				ApplicationEx.currentLocation.getLongitude());
+		if (ApplicationEx.key.equalsIgnoreCase("Concerts"))
+			DESTINATION = new LatLng(ApplicationEx.concerts.getLattitude(),
+					ApplicationEx.concerts.getLongitude());
+		else if (ApplicationEx.key.equalsIgnoreCase("Movie Locations"))
+			DESTINATION = new LatLng(ApplicationEx.movie.getLattitude(),
+					ApplicationEx.movie.getLongitude());
+		else
+			DESTINATION = new LatLng(ApplicationEx.category.getLattitude(),
+					ApplicationEx.category.getLongitude());
 
 		markerPoints = new ArrayList<LatLng>();
-		pd = ProgressDialog.show(this, "", "Loading Driving Directions...");
+
 		/**
 		 * Hide the zoom controls as the button panel will cover it.
 		 */
@@ -168,7 +183,7 @@ public class PlotEventActivity extends FunBaseActivity implements
 							}
 							map.moveCamera(CameraUpdateFactory.newLatLngBounds(
 									bounds, 20));
-							map.animateCamera(CameraUpdateFactory.zoomTo(13),
+							map.animateCamera(CameraUpdateFactory.zoomTo(9),
 									3000, null);
 						}
 					});
@@ -474,10 +489,18 @@ public class PlotEventActivity extends FunBaseActivity implements
 				lineOptions.color(Color.RED);
 			}
 
-			/**
-			 * Drawing polyline in the Google Map for the i-th route
-			 */
-			map.addPolyline(lineOptions);
+			if (lineOptions == null) {
+				org.holoeverywhere.widget.Toast.makeText(
+						PlotEventActivity.this, "Could not find directions...",
+						org.holoeverywhere.widget.Toast.LENGTH_SHORT).show();
+				if (pd != null && pd.isShowing())
+					pd.cancel();
+			} else {
+				/**
+				 * Drawing polyline in the Google Map for the i-th route
+				 */
+				map.addPolyline(lineOptions);
+			}
 		}
 	}
 
@@ -497,13 +520,14 @@ public class PlotEventActivity extends FunBaseActivity implements
 		/**
 		 * Uses a colored icon.
 		 */
-		source = map.addMarker(new MarkerOptions().position(SOURCE).title(""));
+		source = map.addMarker(new MarkerOptions().position(SOURCE).title(
+				"Current Location"));
 
 		/**
 		 * Uses a custom icon.
 		 */
 		destination = map.addMarker(new MarkerOptions().position(DESTINATION)
-				.title(""));
+				.title("Destination Location"));
 	}
 
 	/** Demonstrates customizing the info window and/or its contents. */
@@ -598,6 +622,23 @@ public class PlotEventActivity extends FunBaseActivity implements
 			double lng = location.getLongitude();
 			ApplicationEx.currentLocation.setLattitude(lat);
 			ApplicationEx.currentLocation.setLongitude(lng);
+			pd = ProgressDialog.show(this, "", "Loading Driving Directions...");
+			plotEventsOnMap();
+			getLocations();
+
+		} else {
+			AlertDialog.Builder dialog = FunUtils.getDialogForStatus(
+					PlotEventActivity.this, "Please turn on the GPS",
+					"Enable GPS");
+			dialog.setCancelable(false);
+			dialog.setPositiveButton(android.R.string.ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							finish();
+						}
+					});
+			dialog.show();
 		}
 	}
 

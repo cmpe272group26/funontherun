@@ -21,7 +21,7 @@
         android:layout_below="@+id/source_text_view"
         android:layout_centerHorizontal="true"
         android:layout_margin="10dip"
-        android:hint="@string/src" android:text="San Jose"
+        android:hint="@string/src"
         android:singleLine="true" />
 
     <TextView
@@ -42,7 +42,7 @@
         android:layout_marginBottom="60dip"
         android:layout_marginLeft="10dip"
         android:layout_marginRight="10dip"
-        android:hint="@string/dest" android:text="San Francisco"
+        android:hint="@string/dest"
         android:singleLine="true" />
 
     <Button

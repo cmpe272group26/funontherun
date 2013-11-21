@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.funontherun.ApplicationEx;
 import com.funontherun.R;
 import com.funontherun.entities.Category;
-import com.funontherun.utils.FunUtils;
 
 public class CategoryListAdapter extends BaseAdapter {
 	private List<Category> categoryList = new ArrayList<Category>();
@@ -68,9 +69,17 @@ public class CategoryListAdapter extends BaseAdapter {
 			contactsViewHolder = (ContactsViewHolder) convertView.getTag();
 		}
 		Category category = categoryList.get(position);
+		if (ApplicationEx.key.equalsIgnoreCase("Sightseeing")
+				|| ApplicationEx.key.equalsIgnoreCase("Services")) {
+			String categoryStr = "<font color=#cc0029>" + category.getName()
+					+ ", " + "</font> <font color=#ffcc00>"
+					+ category.getTypes() + "</font>";
+			contactsViewHolder.name.setText(Html.fromHtml(categoryStr));
 
-		contactsViewHolder.name.setText(category.getName());
-
+			// contactsViewHolder.name.setText(category.getName() + ", "
+			// + category.getTypes());
+		} else
+			contactsViewHolder.name.setText(category.getName());
 		convertView.setTag(R.id.fun_id, category);
 		convertView.setTag(contactsViewHolder);
 		return convertView;

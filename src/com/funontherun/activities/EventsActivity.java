@@ -23,6 +23,7 @@ import com.funontherun.ApplicationEx;
 import com.funontherun.R;
 import com.funontherun.adapters.CategoryListAdapter;
 import com.funontherun.entities.Category;
+import com.funontherun.entities.Location;
 import com.funontherun.services.RetrieveEventsService;
 import com.funontherun.services.RetrieveEventsService.RetrieveEventsServiceListener;
 import com.funontherun.utils.Constants;
@@ -52,6 +53,7 @@ public class EventsActivity extends FunBaseActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.category_list);
 
+		FunUtils.resetValues();
 		actionBarSherlock = getSupportActionBar();
 
 		actionBarSherlock.setHomeButtonEnabled(false);
@@ -59,8 +61,8 @@ public class EventsActivity extends FunBaseActivity implements
 		 * whether to show Standard Home Icon or not
 		 */
 		actionBarSherlock.setDisplayHomeAsUpEnabled(true);
-		actionBarSherlock.setBackgroundDrawable(getResources().getDrawable(
-				R.drawable.nav_bar));
+		// actionBarSherlock.setBackgroundDrawable(getResources().getDrawable(
+		// R.drawable.nav_bar));
 
 		Intent intent = getIntent();
 
@@ -76,9 +78,35 @@ public class EventsActivity extends FunBaseActivity implements
 		categoryListView = (ListView) findViewById(R.id.category_list_view);
 		categoryListAdapter = new CategoryListAdapter(categoryList, this);
 		categoryListView.setAdapter(categoryListAdapter);
-		getCategories();
+		FunUtils.getEquidistantPoint();
+		if (ApplicationEx.selectedLocation == 0) {
+			pd = ProgressDialog.show(EventsActivity.this, "", "Loading...",
+					true);
+			for (int i = 0; i <= ApplicationEx.routePointsList.size(); i = (i + ApplicationEx.increment) - 1) {
+				Location location = new Location();
+				location.setLattitude(ApplicationEx.routePointsList.get(i).latitude);
+				location.setLongitude(ApplicationEx.routePointsList.get(i).longitude);
+				getCategoriesAlongRoute(location);
+			}
+
+		} else {
+			getCategories();
+		}
 		categoryListView.setOnItemClickListener(onItemClickListener);
 
+	}
+
+	/**
+	 * Web service call for categories
+	 */
+	public void getCategoriesAlongRoute(Location location) {
+		Constants.setEventLocation();
+		Constants.setRangeInMeters();
+		RetrieveEventsService service = new RetrieveEventsService(
+				getApplicationContext(), searchQuery, location,
+				ApplicationEx.rangeInMeters);
+		service.setListener(this);
+		ApplicationEx.operationsQueue.execute(service);
 	}
 
 	/**
@@ -111,6 +139,12 @@ public class EventsActivity extends FunBaseActivity implements
 		case R.id.range:
 			showDialog(RANGE_DIALOG);
 			break;
+		case R.id.map:
+			Intent intent = new Intent(EventsActivity.this,
+					EventsOnMapActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			break;
 		default:
 			break;
 		}
@@ -134,6 +168,9 @@ public class EventsActivity extends FunBaseActivity implements
 		}
 	};
 
+	/**
+	 * Creating Menu
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		MenuInflater inflater = getSupportMenuInflater();
@@ -145,15 +182,41 @@ public class EventsActivity extends FunBaseActivity implements
 	 * Success callback of web service
 	 */
 	@Override
-	public void onRetrieveEventsFinished(List<Category> resultList) {
-		if (pd.isShowing() && pd != null)
-			pd.cancel();
-		categoryList = resultList;
-		if (categoryList.size() == 0)
-			Toast.makeText(EventsActivity.this, "Search not found...",
-					Toast.LENGTH_SHORT).show();
-		else
-			categoryListAdapter.setCategoryList(categoryList);
+	public void onRetrieveEventsFinished(ArrayList<Category> resultList) {
+		ApplicationEx.count++;
+		ArrayList<Category> mainList = new ArrayList<Category>();
+		if (ApplicationEx.selectedLocation == 0) {
+			ApplicationEx.mainCategoryList.add(resultList);
+			if (ApplicationEx.count == 6) {
+				for (int i = 0; i < ApplicationEx.mainCategoryList.size(); i++) {
+					for (int j = 0; j < ApplicationEx.mainCategoryList.get(i)
+							.size(); j++) {
+						Category category = new Category();
+						category = ApplicationEx.mainCategoryList.get(i).get(j);
+						mainList.add(category);
+
+					}
+				}
+				if (pd.isShowing() && pd != null)
+					pd.cancel();
+				categoryListAdapter.setCategoryList(mainList);
+				System.out.println("***************" + mainList.size()
+						+ "****************");
+			}
+
+		} else {
+			if (pd.isShowing() && pd != null)
+				pd.cancel();
+			categoryList = resultList;
+			ApplicationEx.mapCategoryList = resultList;
+			if (categoryList.size() == 0) {
+				Toast.makeText(EventsActivity.this, "No results found...",
+						Toast.LENGTH_SHORT).show();
+				categoryListAdapter.setCategoryList(categoryList);
+			} else
+				categoryListAdapter.setCategoryList(categoryList);
+			System.out.println("***" + categoryList.size() + "***");
+		}
 
 	}
 
@@ -179,7 +242,19 @@ public class EventsActivity extends FunBaseActivity implements
 							case 0:
 								ApplicationEx.selectedLocation = 0;
 								locationDialog.dismiss();
-								getCategories();
+								FunUtils.resetValues();
+								FunUtils.getEquidistantPoint();
+								pd = ProgressDialog.show(EventsActivity.this,
+										"", "Loading...", true);
+								for (int i = 0; i <= ApplicationEx.routePointsList
+										.size(); i = (i + ApplicationEx.increment) - 1) {
+									Location location = new Location();
+									location.setLattitude(ApplicationEx.routePointsList
+											.get(i).latitude);
+									location.setLongitude(ApplicationEx.routePointsList
+											.get(i).longitude);
+									getCategoriesAlongRoute(location);
+								}
 								break;
 							case 1:
 								ApplicationEx.selectedLocation = 1;
@@ -208,22 +283,38 @@ public class EventsActivity extends FunBaseActivity implements
 							case 0:
 								ApplicationEx.selectedRange = 0;
 								rangeDialog.dismiss();
-								getCategories();
+								if (ApplicationEx.selectedLocation == 0) {
+									showMessage();
+								} else {
+									getCategories();
+								}
 								break;
 							case 1:
 								ApplicationEx.selectedRange = 1;
 								rangeDialog.dismiss();
-								getCategories();
+								if (ApplicationEx.selectedLocation == 0) {
+									showMessage();
+								} else {
+									getCategories();
+								}
 								break;
 							case 2:
 								ApplicationEx.selectedRange = 2;
 								rangeDialog.dismiss();
-								getCategories();
+								if (ApplicationEx.selectedLocation == 0) {
+									showMessage();
+								} else {
+									getCategories();
+								}
 								break;
 							case 3:
 								ApplicationEx.selectedRange = 3;
 								rangeDialog.dismiss();
-								getCategories();
+								if (ApplicationEx.selectedLocation == 0) {
+									showMessage();
+								} else {
+									getCategories();
+								}
 								break;
 							}
 						}
@@ -243,6 +334,14 @@ public class EventsActivity extends FunBaseActivity implements
 		if (pd.isShowing() && pd != null)
 			pd.cancel();
 		FunUtils.showStatus(EventsActivity.this, message, "Error");
+	}
+
+	/**
+	 * Toast message for user
+	 */
+	public void showMessage() {
+		Toast.makeText(getApplicationContext(),
+				"Please select a valid option...", Toast.LENGTH_SHORT).show();
 	}
 
 }

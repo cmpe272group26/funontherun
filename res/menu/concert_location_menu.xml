@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/map"
+        android:icon="@drawable/map_marker"
+        android:orderInCategory="100"
+        android:showAsAction="always">
+    </item>
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/abs__ic_menu_moreoverflow_holo_dark"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/range_settings">
+        <menu>
+            <item
+                android:id="@+id/location"
+                android:title="@string/location"/>
+        </menu>
+    </item>
+
+</menu>

@@ -71,4 +71,16 @@ public final class Constants {
 		}
 	}
 
+	/**
+	 * 
+	 * @param temp
+	 * @return temperature in degree Fahrenheit
+	 */
+	public static int convertKelvinToDegreeFahrenheit(double temp) {
+
+		double celcTemp = 0;
+		celcTemp = ((temp - 273) * 1.8) + 32;
+		return (int) Math.round(celcTemp);
+	}
+
 }

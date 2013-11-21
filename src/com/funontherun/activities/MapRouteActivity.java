@@ -12,6 +12,7 @@ import java.util.List;
 
 import net.simonvt.menudrawer.MenuDrawer;
 
+import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.ProgressDialog;
 import org.holoeverywhere.widget.Toast;
@@ -30,7 +31,6 @@ import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
@@ -133,22 +133,29 @@ public class MapRouteActivity extends Activity implements
 		/**
 		 * Attach the List & Map views to the Sliding Menu
 		 */
-		mMenuDrawer = MenuDrawer.attach(this);
-		mMenuDrawer.setContentView(R.layout.activity_map_demo);
-		mMenuDrawer.setTouchMode(MenuDrawer.TOUCH_MODE_NONE);
-		mMenuDrawer.setMenuView(R.layout.activity_sliding_menu);
+		try {
+			mMenuDrawer = MenuDrawer.attach(this);
+			mMenuDrawer.setContentView(R.layout.activity_map_demo);
+			mMenuDrawer.setTouchMode(MenuDrawer.TOUCH_MODE_NONE);
+			mMenuDrawer.setMenuView(R.layout.activity_sliding_menu);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		actionBarSherlock = getSupportActionBar();
 
-		actionBarSherlock.setTitle(getResources().getString(R.string.driving_directions));
-		actionBarSherlock.setHomeButtonEnabled(false);
+		actionBarSherlock.setTitle(getResources().getString(
+				R.string.driving_directions));
+		actionBarSherlock.setIcon(getResources().getDrawable(
+				R.drawable.category_list));
 		/**
 		 * whether to show Standard Home Icon or not
 		 */
 		actionBarSherlock.setDisplayHomeAsUpEnabled(false);
+		actionBarSherlock.setHomeButtonEnabled(true);
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			getActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
 
 		listView = (ListView) findViewById(R.id.list);
@@ -156,8 +163,8 @@ public class MapRouteActivity extends Activity implements
 		listView.setOnItemClickListener(onItemClickListner);
 		listView.setAdapter(adapter);
 
-		map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-				.getMap();
+		map = ((MapFragment) getFragmentManager().findFragmentById(
+				R.id.map)).getMap();
 		markerPoints = new ArrayList<LatLng>();
 		pd = ProgressDialog.show(this, "", "Loading Driving Directions...");
 
@@ -234,7 +241,7 @@ public class MapRouteActivity extends Activity implements
 							}
 							map.moveCamera(CameraUpdateFactory.newLatLngBounds(
 									bounds, 20));
-							map.animateCamera(CameraUpdateFactory.zoomTo(9),
+							map.animateCamera(CameraUpdateFactory.zoomTo(6),
 									3000, null);
 						}
 					});
@@ -471,6 +478,7 @@ public class MapRouteActivity extends Activity implements
 			ArrayList<LatLng> points = null;
 			PolylineOptions lineOptions = null;
 			MarkerOptions markerOptions = new MarkerOptions();
+			ApplicationEx.result = result;
 
 			/**
 			 * Traversing through all the routes
@@ -495,10 +503,8 @@ public class MapRouteActivity extends Activity implements
 					LatLng position = new LatLng(lat, lng);
 
 					points.add(position);
+					ApplicationEx.routePointsList.add(position);
 				}
-
-				if (pd != null && pd.isShowing())
-					pd.cancel();
 
 				/**
 				 * Adding all the points in the route to LineOptions
@@ -506,12 +512,24 @@ public class MapRouteActivity extends Activity implements
 				lineOptions.addAll(points);
 				lineOptions.width(10);
 				lineOptions.color(Color.RED);
+
+				if (pd != null && pd.isShowing())
+					pd.cancel();
+
 			}
 
-			/**
-			 * Drawing polyline in the Google Map for the i-th route
-			 */
-			map.addPolyline(lineOptions);
+			if (lineOptions == null) {
+				org.holoeverywhere.widget.Toast.makeText(
+						MapRouteActivity.this, "Could not find directions...",
+						org.holoeverywhere.widget.Toast.LENGTH_SHORT).show();
+				if (pd != null && pd.isShowing())
+					pd.cancel();
+			} else {
+				/**
+				 * Drawing polyline in the Google Map for the i-th route
+				 */
+				map.addPolyline(lineOptions);
+			}
 		}
 	}
 
@@ -527,13 +545,30 @@ public class MapRouteActivity extends Activity implements
 			mActivePosition = position;
 			mMenuDrawer.setActiveView(view, position);
 			mMenuDrawer.closeMenu();
-
-			Intent intent = new Intent(MapRouteActivity.this,
-					EventsActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			intent.putExtra(getResources().getString(R.string.category),
-					selectedItem);
-			startActivity(intent);
+			ApplicationEx.key = selectedItem;
+			if (ApplicationEx.key.equalsIgnoreCase("weather")) {
+				Intent intent = new Intent(MapRouteActivity.this,
+						WeatherActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+			} else if (ApplicationEx.key.equalsIgnoreCase("Concerts")) {
+				Intent intent = new Intent(MapRouteActivity.this,
+						ConcertsActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+			} else if (ApplicationEx.key.equalsIgnoreCase("Movie Locations")) {
+				Intent intent = new Intent(MapRouteActivity.this,
+						MovieActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+			} else {
+				Intent intent = new Intent(MapRouteActivity.this,
+						EventsActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				intent.putExtra(getResources().getString(R.string.category),
+						selectedItem);
+				startActivity(intent);
+			}
 
 		}
 	};
@@ -792,6 +827,12 @@ public class MapRouteActivity extends Activity implements
 						.getTag();
 			}
 			String item = teamList.get(position);
+			if (position % 2 == 0)
+				activitiesViewHolder.itemTextView.setTextColor(getResources()
+						.getColor(R.color.yellow));
+			else
+				activitiesViewHolder.itemTextView.setTextColor(getResources()
+						.getColor(R.color.white));
 			activitiesViewHolder.itemTextView.setText(item);
 			convertView.setTag(activitiesViewHolder);
 			convertView.setTag(R.id.id_name, item);
